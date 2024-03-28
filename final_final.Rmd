@@ -1,0 +1,168 @@
+---
+title: "final_SARIMA"
+author: "Riya Saini"
+date: "2023-12-03"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(astsa)
+library(tseries)
+library(dplyr) 
+library(ggplot2)
+library(forecast)
+library(imputeTS)
+library(dynlm)
+library(zoo)
+library(xts)
+library(readxl)
+```
+
+```{r}
+energy <- read_excel("Region_MIDW.xlsx")
+dim(energy)
+```
+```{r}
+energy_consumption <- energy[65778:72000,c(2,8)]
+head(energy_consumption)
+```
+```{r}
+tail(energy_consumption)
+```
+```{r}
+dim(energy_consumption)
+```
+```{r}
+dim(energy_consumption)
+str(energy_consumption)
+```
+```{r}
+data_ts = as.xts(x = energy_consumption[,2], order.by = energy_consumption$`UTC time`)
+data_ts
+```
+```{r}
+energy_consumption[4981,]
+```
+
+```{r}
+plot(data_ts, main='Energy Demand')
+```
+```{r}
+adf.test(diff2[25:6223])
+```
+```{r}
+kpss.test(diff2[25:6223])
+```
+
+```{r}
+train= head(data_ts, 4980)
+
+length(train)
+
+test= data_ts[4981:6223]
+
+length(test)
+```
+```{r}
+acf2(train, main= "ACF and PACF plots before Seasonal Differencing")
+```
+```{r}
+dif= diff(data_ts, 1)
+
+acf2(diff, main = "ACF and PACF plots after Seasonal Differencing (1)")
+```
+```{r}
+diff2= diff(data_ts, 24)
+
+acf2(diff2, main = "ACF and PACF plots after Seasonal Differencing (24)")
+```
+```{r}
+adf.test(diff2)
+```
+```{r}
+diff2
+```
+
+p = 1,2
+d = 0
+q = 0
+
+P = 1
+D = 1
+Q = 0,1
+
+```{r}
+p= c(1, 2)
+d= c(0)
+q= c(0)
+
+P= c(1)
+D= c(1)
+Q= c(0, 1)
+
+for (i in p){
+  
+  for (j in d){
+    
+    for (k in q){
+      
+      for (l in P){
+        
+        for (m in D){
+          
+          for (n in Q){
+            
+            tryCatch({
+              
+              print(paste(i, j, k, l, m , n, sep = ","))
+              sarima(train, i, j, k, l, m, n, 24)
+              
+            }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+            
+          }
+          
+        }
+        
+      }
+      
+    }
+    
+  }
+  
+}
+```
+```{r}
+sarima(train, 2, 0, 0, 1, 1, 0, 24)
+sarima(train, 3, 0, 0, 1, 1, 0, 24)
+sarima(train, 3, 0, 0, 1, 1, 1, 24)
+
+library(tictoc)
+```
+```{r}
+tic()
+sarima(train, 1, 1, 2, 3, 1, 0, 7)
+toc()
+```
+```{r}
+train_gw = train/100000
+test_gw = test/100000
+
+pred= sarima.for(train_gw, n.ahead =500, 3, 0, 0, 1, 1, 1, 24)
+
+
+accuracy(object= pred$pred, test_gw)
+```
+
+```{r}
+forecast= sarima.for(data_ts, n.ahead =5, 3, 0, 0, 1, 1, 1, 24)
+
+ts(data_ts)
+```
+```{r}
+
+```
+
